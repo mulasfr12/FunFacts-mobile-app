@@ -1,5 +1,6 @@
 package com.example.funfactsapp.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.*
 import com.example.funfactsapp.data.db.Fact
 import com.example.funfactsapp.data.repository.FactRepository
@@ -25,9 +26,17 @@ class FactViewModel(private val repository: FactRepository) : ViewModel() {
 
     fun fetchRandomFacts(count: Int = 5) {
         viewModelScope.launch {
-            _facts.postValue(repository.fetchRandomFacts(count))
+            try {
+                val fetchedFacts = repository.fetchRandomFacts(count)
+                Log.d("FactViewModel", "Fetched ${fetchedFacts.size} facts from API")
+                _facts.postValue(fetchedFacts)
+            } catch (e: Exception) {
+                Log.e("FactViewModel", "Error fetching facts: ${e.message}", e)
+            }
         }
     }
+
+
 
     fun getFavoriteFacts() {
         viewModelScope.launch {

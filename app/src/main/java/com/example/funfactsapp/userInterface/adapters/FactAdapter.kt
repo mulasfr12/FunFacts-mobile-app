@@ -1,5 +1,6 @@
 package com.example.funfactsapp.userInterface.adapters
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -9,8 +10,8 @@ import com.example.funfactsapp.data.db.Fact
 import com.example.funfactsapp.databinding.ItemFactBinding
 
 class FactAdapter(
-    private val onFavoriteClick: (Fact) -> Unit,
-    private var favoriteFactIds: Set<Int> = emptySet() // ✅ Accepts favorite fact IDs
+    private var favoriteFactIds: Set<Int>, // ✅ Now accepts favorite IDs
+    private val onFavoriteClick: (Fact) -> Unit
 ) : ListAdapter<Fact, FactAdapter.FactViewHolder>(FactDiffCallback()) {
 
     inner class FactViewHolder(private val binding: ItemFactBinding) :
@@ -18,9 +19,7 @@ class FactAdapter(
 
         fun bind(fact: Fact) {
             binding.tvFact.text = fact.text
-
-            // ✅ Ensure favorite button reflects current favorite status
-            binding.btnFavorite.isSelected = favoriteFactIds.contains(fact.id)
+            binding.btnFavorite.isSelected = favoriteFactIds.contains(fact.id) // ✅ Correctly marks favorites
 
             binding.btnFavorite.setOnClickListener {
                 onFavoriteClick(fact)
@@ -37,12 +36,13 @@ class FactAdapter(
         holder.bind(getItem(position))
     }
 
-    // ✅ Method to update favorite fact IDs dynamically
+    // ✅ Update favorite fact IDs dynamically
     fun updateFavorites(favorites: List<Fact>) {
         favoriteFactIds = favorites.map { it.id }.toSet()
         notifyDataSetChanged()
     }
 }
+
 
 // ✅ DiffUtil for efficient RecyclerView updates
 class FactDiffCallback : DiffUtil.ItemCallback<Fact>() {

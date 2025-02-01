@@ -1,6 +1,7 @@
 package com.example.funfactsapp.userInterface.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -50,8 +51,10 @@ class FactListFragment : Fragment() {
 
         // ✅ Observe facts and update RecyclerView
         factViewModel.facts.observe(viewLifecycleOwner) { facts ->
+            Log.d("FactListFragment", "Loaded facts: ${facts.size}")
             factAdapter.submitList(facts)
         }
+
 
         // ✅ Observe favorite facts and update adapter dynamically
         factViewModel.favoriteFacts.observe(viewLifecycleOwner) { favorites ->
