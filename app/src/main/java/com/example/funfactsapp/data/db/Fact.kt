@@ -8,5 +8,4 @@ data class Fact(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val text: String,
     val category: String,
-    var isFavorite: Boolean = false
 )

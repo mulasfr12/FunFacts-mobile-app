@@ -1,4 +1,4 @@
-package com.example.funfactsapp.viewmodel.FactViewModel
+package com.example.funfactsapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.LiveData

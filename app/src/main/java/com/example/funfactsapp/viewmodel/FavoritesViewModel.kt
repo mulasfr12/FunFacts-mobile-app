@@ -1,27 +1,30 @@
-package com.example.funfactsapp.viewmodel.FactViewModel
+package com.example.funfactsapp.viewmodel
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.example.funfactsapp.data.db.Fact
 import com.example.funfactsapp.data.repository.FactRepository
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 class FavoritesViewModel(private val repository: FactRepository) : ViewModel() {
+
+    // LiveData for favorite facts
     private val _favorites = MutableLiveData<List<Fact>>()
     val favorites: LiveData<List<Fact>> get() = _favorites
 
+    // Get favorite facts (Flow for real-time updates)
     fun getFavoriteFacts() {
         viewModelScope.launch {
-            val favorites = repository.getFavoriteFacts()
-            _favorites.postValue(favorites)
+            repository.getFavoriteFacts().collect { favoriteFacts ->
+                _favorites.postValue(favoriteFacts)
+            }
         }
     }
 
+    // Remove fact from favorites and refresh list
     fun removeFavorite(fact: Fact) {
         viewModelScope.launch {
-            repository.removeFactFromFavorites(fact.id)
+            repository.unmarkFavorite(fact.id)
             getFavoriteFacts() // Refresh the list after deletion
         }
     }

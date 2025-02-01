@@ -2,8 +2,13 @@ package com.example.funfactsapp.data.repository
 
 import com.example.funfactsapp.data.db.Fact
 import com.example.funfactsapp.data.db.FactDao
+import com.example.funfactsapp.data.db.FavoriteFact
 import com.example.funfactsapp.data.model.FactResponseMapper
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class FactRepository(private val factDao: FactDao) {
@@ -12,9 +17,9 @@ class FactRepository(private val factDao: FactDao) {
     suspend fun fetchRandomFact(): Fact? {
         return withContext(Dispatchers.IO) {
             try {
-                val apiResponse = RetrofitInstance.api.getRandomFact() // Get API response
-                val fact = FactResponseMapper.mapToFact(apiResponse) // Convert to Fact
-                factDao.insertFact(fact) // Save to database
+                val apiResponse = RetrofitInstance.api.getRandomFact()
+                val fact = FactResponseMapper.mapToFact(apiResponse)
+                fact?.let { factDao.insertFact(it) } // Save fact if not null
                 fact
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -22,16 +27,25 @@ class FactRepository(private val factDao: FactDao) {
             }
         }
     }
-    // Fetch multiple random facts (workaround for APIs that return one fact at a time)
+    suspend fun removeFact(factId: Int) {
+        withContext(Dispatchers.IO) {
+            factDao.deleteFact(factId)  // ✅ No need to store return value
+            println("Deleted fact with ID: $factId")
+        }
+    }
+
+    // Fetch multiple random facts
     suspend fun fetchRandomFacts(count: Int): List<Fact> {
         return withContext(Dispatchers.IO) {
             try {
                 val facts = mutableListOf<Fact>()
                 repeat(count) {
-                    val apiResponse = RetrofitInstance.api.getRandomFact() // Fetch one fact
+                    val apiResponse = RetrofitInstance.api.getRandomFact()
                     val fact = FactResponseMapper.mapToFact(apiResponse)
-                    factDao.insertFact(fact) // Save to database
-                    facts.add(fact)
+                    fact?.let {
+                        factDao.insertFact(it)
+                        facts.add(it)
+                    }
                 }
                 facts
             } catch (e: Exception) {
@@ -47,7 +61,7 @@ class FactRepository(private val factDao: FactDao) {
             try {
                 val response = RetrofitInstance.api.getFactByCategory(category)
                 val fact = FactResponseMapper.mapToFact(response)
-                factDao.insertFact(fact)
+                fact?.let { factDao.insertFact(it) }
                 fact
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -56,84 +70,52 @@ class FactRepository(private val factDao: FactDao) {
         }
     }
 
-
-    // Get all saved facts from the database
-    suspend fun getAllFacts(): List<Fact> {
-        return withContext(Dispatchers.IO) {
-            factDao.getAllFacts()
-        }
+    // Get all saved facts from database (using Flow for real-time updates)
+    fun getAllFacts(): Flow<List<Fact>> {
+        return factDao.getAllFacts()
     }
 
-    // Get favorite facts
-    suspend fun getFavoriteFacts(): List<Fact> {
-        return withContext(Dispatchers.IO) {
-            factDao.getFavoriteFacts()
-        }
+    // Get favorite facts (JOIN with favorite_facts table)
+    fun getFavoriteFacts(): Flow<List<Fact>> {
+        return factDao.getFavoriteFacts()
     }
 
-    // Update fact's favorite status
-    suspend fun updateFavoriteStatus(factId: Int, isFavorite: Boolean) {
+    // Mark a fact as favorite (Insert into favorite_facts table)
+    suspend fun markAsFavorite(factId: Int) {
         withContext(Dispatchers.IO) {
             try {
-                factDao.updateFavoriteStatus(factId, isFavorite)
-            } catch (e: Exception) {
-                e.printStackTrace() // Log any potential errors
-            }
-        }
-    }
-
-    // Delete all facts
-    suspend fun deleteAllFacts() {
-        withContext(Dispatchers.IO) {
-            try {
-                factDao.deleteAllFacts()
+                factDao.markAsFavorite(FavoriteFact(factId))
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
     }
 
-    // Save fact to favorites
-    suspend fun saveFactToFavorites(fact: Fact) {
+    // Remove a fact from favorites (Delete from favorite_facts table)
+    suspend fun unmarkFavorite(factId: Int) {
         withContext(Dispatchers.IO) {
-            try {
-                // Create a new copy of the fact with updated isFavorite status
-                val updatedFact = fact.copy(isFavorite = true)
-                factDao.updateFact(updatedFact) // Update in database
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+            val rowsDeleted = factDao.unmarkFavorite(factId)
+            println("Removed $rowsDeleted favorite fact(s)")
         }
     }
 
-    // Delete fact from favorites
-    suspend fun removeFactFromFavorites(factId: Int) {
-        withContext(Dispatchers.IO) {
-            try {
-                factDao.updateFavoriteStatus(factId, false) // Set favorite status to false
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+
+    // Check if a fact is marked as favorite
+    fun isFavorite(factId: Int): Flow<Boolean> {
+        return factDao.isFavorite(factId).map { count -> count > 0 } // ✅ Convert Int to Boolean
+    }
+
+    // Delete all facts from database
+    fun clearAllFacts() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val rowsDeleted = factDao.deleteAllFacts()
+            println("Deleted $rowsDeleted facts from the database")
         }
     }
 
-    // Fetch facts with caching (offline support)
-    suspend fun fetchCachedFacts(): List<Fact> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val facts = factDao.getAllFacts()
-                if (facts.isNotEmpty()) {
-                    facts // Return cached facts if available
-                } else {
-                    val response = RetrofitInstance.api.getRandomFact()
-                    val fact = FactResponseMapper.mapToFact(response)
-                    factDao.insertFact(fact)
-                    listOf(fact) // Return the new fact
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                emptyList() // Return empty list in case of failure
-            }
-        }
+
+    // Fetch cached facts with offline support (Flow for real-time updates)
+    fun fetchCachedFacts(): Flow<List<Fact>> {
+        return factDao.getAllFacts()
     }
 }

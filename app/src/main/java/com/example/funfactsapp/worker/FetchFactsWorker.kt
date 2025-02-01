@@ -1,32 +1,32 @@
 package com.example.funfactsapp.worker
 
 import android.content.Context
-import androidx.work.Worker
+import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.example.funfactsapp.data.repository.FactRepository
 import com.example.funfactsapp.utils.NotificationHelper
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
 
 class FactFetchWorker(
     context: Context,
-    workerParams: WorkerParameters,
-    private val repository: FactRepository
-) : Worker(context, workerParams) {
+    workerParams: WorkerParameters
+) : CoroutineWorker(context, workerParams) {
 
-    override fun doWork(): Result {
+    override suspend fun doWork(): Result {
         return try {
-            // Perform the background task using coroutines
-            runBlocking {
-                val randomFact = repository.fetchRandomFact()
-                if (randomFact != null) {
-                    // Trigger a notification with the random fact
-                    NotificationHelper.showFactNotification(
-                        context = applicationContext,
-                        title = "Fun Fact",
-                        message = randomFact.text
-                    )
-                }
+            val repository = FactRepositorySingleton.repository // Get repository instance
+            val randomFact = repository.fetchRandomFact()
+
+            randomFact?.let {
+                // Trigger a notification with the random fact
+                NotificationHelper.showFactNotification(
+                    context = applicationContext,
+                    title = "Fun Fact",
+                    message = it.text
+                )
             }
+
             Result.success()
         } catch (e: Exception) {
             e.printStackTrace()

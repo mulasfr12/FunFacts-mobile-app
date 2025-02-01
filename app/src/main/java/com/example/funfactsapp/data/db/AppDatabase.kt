@@ -4,8 +4,9 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [Fact::class], version = 1, exportSchema = false)
+@Database(entities = [Fact::class, FavoriteFact::class], version = 3, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun factDao(): FactDao
@@ -20,7 +21,9 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "fun_facts_db"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration() // ✅ Forces Room to rebuild schema
+                    .build()
                 INSTANCE = instance
                 instance
             }
