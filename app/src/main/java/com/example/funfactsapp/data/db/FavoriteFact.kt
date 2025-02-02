@@ -5,5 +5,5 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "favorite_facts")
 data class FavoriteFact(
-    @PrimaryKey val factId: Int
+    @PrimaryKey val factId: Int // ✅ Ensure this factId exists in the `facts` table
 )

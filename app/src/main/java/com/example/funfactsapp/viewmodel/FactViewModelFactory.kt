@@ -6,10 +6,10 @@ import com.example.funfactsapp.data.repository.FactRepository
 
 class FactViewModelFactory(private val repository: FactRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(FactViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return FactViewModel(repository) as T
+        return when {
+            modelClass.isAssignableFrom(FactViewModel::class.java) -> FactViewModel(repository) as T
+            modelClass.isAssignableFrom(FavoritesViewModel::class.java) -> FavoritesViewModel(repository) as T
+            else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }
-        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

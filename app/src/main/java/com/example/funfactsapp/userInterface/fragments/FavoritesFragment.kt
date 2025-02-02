@@ -8,7 +8,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.funfactsapp.data.db.AppDatabase
-import com.example.funfactsapp.data.db.Fact
 import com.example.funfactsapp.data.repository.FactRepository
 import com.example.funfactsapp.databinding.FragmentFavoritesBinding
 import com.example.funfactsapp.userInterface.adapters.FactAdapter
@@ -20,12 +19,9 @@ class FavoritesFragment : Fragment() {
     private var _binding: FragmentFavoritesBinding? = null
     private val binding get() = _binding!!
 
-    // ✅ Initialize Database & Repository for ViewModelFactory
-    private val database by lazy { AppDatabase.getDatabase(requireContext()) }
-    private val factRepository by lazy { FactRepository(database.factDao()) }
-
+    // ✅ Correctly initialize ViewModel using Factory
     private val favoritesViewModel: FavoritesViewModel by viewModels {
-        FactViewModelFactory(factRepository) // ✅ Pass repository to ViewModel
+        FactViewModelFactory(FactRepository(AppDatabase.getDatabase(requireContext()).factDao()))
     }
 
     private lateinit var factAdapter: FactAdapter
@@ -41,9 +37,9 @@ class FavoritesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // ✅ Initialize Adapter
+        // ✅ Initialize adapter
         factAdapter = FactAdapter(
-            favoriteFactIds = emptySet(), // ✅ Initialize with empty favorites
+            favoriteFactIds = emptySet(),
             onFavoriteClick = { fact -> removeFavorite(fact) }
         )
 
@@ -52,18 +48,17 @@ class FavoritesFragment : Fragment() {
             adapter = factAdapter
         }
 
-// ✅ Observe favorite facts and update adapter dynamically
+        // ✅ Observe favorite facts
         favoritesViewModel.favorites.observe(viewLifecycleOwner) { favorites ->
             factAdapter.submitList(favorites)
-            factAdapter.updateFavorites(favorites) // ✅ Correctly updates favorite IDs
+            factAdapter.updateFavorites(favorites)
         }
 
-
-        // ✅ Fetch favorite facts from database
+        // ✅ Fetch favorite facts
         favoritesViewModel.getFavoriteFacts()
     }
 
-    private fun removeFavorite(fact: Fact) {
+    private fun removeFavorite(fact: com.example.funfactsapp.data.db.Fact) {
         favoritesViewModel.removeFavorite(fact)
     }
 

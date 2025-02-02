@@ -54,8 +54,13 @@ class FactViewModel(private val repository: FactRepository) : ViewModel() {
     }
     fun saveToFavorites(fact: Fact) {
         viewModelScope.launch {
+            if (fact.id == 0) {
+                Log.e("FactViewModel", "Error: Trying to save a fact with ID 0")
+                return@launch
+            }
             repository.markAsFavorite(fact.id)
-            refreshFavorites() // ✅ Efficiently refresh only the needed data
+            Log.d("FactViewModel", "Saved fact to favorites: ${fact.text} with ID ${fact.id}")
+            refreshFavorites()
         }
     }
 

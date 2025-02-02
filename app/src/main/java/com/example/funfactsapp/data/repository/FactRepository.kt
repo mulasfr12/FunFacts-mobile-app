@@ -1,5 +1,6 @@
 package com.example.funfactsapp.data.repository
 
+import android.util.Log
 import com.example.funfactsapp.data.db.Fact
 import com.example.funfactsapp.data.db.FactDao
 import com.example.funfactsapp.data.db.FavoriteFact
@@ -8,6 +9,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -19,14 +21,17 @@ class FactRepository(private val factDao: FactDao) {
             try {
                 val apiResponse = RetrofitInstance.api.getRandomFact()
                 val fact = FactResponseMapper.mapToFact(apiResponse)
-                fact?.let { factDao.insertFact(it) } // Save fact if not null
-                fact
+                fact?.let {
+                    val id = factDao.insertFact(it).toInt() // ✅ Assign the generated ID
+                    it.copy(id = id) // ✅ Return fact with the correct ID
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
                 null
             }
         }
     }
+
     suspend fun removeFact(factId: Int) {
         withContext(Dispatchers.IO) {
             factDao.deleteFact(factId)  // ✅ No need to store return value
@@ -43,8 +48,8 @@ class FactRepository(private val factDao: FactDao) {
                     val apiResponse = RetrofitInstance.api.getRandomFact()
                     val fact = FactResponseMapper.mapToFact(apiResponse)
                     fact?.let {
-                        factDao.insertFact(it)
-                        facts.add(it)
+                        val id = factDao.insertFact(it).toInt() // ✅ Assign the generated ID
+                        facts.add(it.copy(id = id)) // ✅ Store facts with correct IDs
                     }
                 }
                 facts
@@ -77,19 +82,24 @@ class FactRepository(private val factDao: FactDao) {
 
     // Get favorite facts (JOIN with favorite_facts table)
     fun getFavoriteFacts(): Flow<List<Fact>> {
-        return factDao.getFavoriteFacts()
+        return factDao.getFavoriteFacts().onEach { favorites ->
+            Log.d("FactRepository", "Retrieved ${favorites.size} favorite facts from DB")
+        }
     }
+
 
     // Mark a fact as favorite (Insert into favorite_facts table)
     suspend fun markAsFavorite(factId: Int) {
         withContext(Dispatchers.IO) {
             try {
                 factDao.markAsFavorite(FavoriteFact(factId))
+                Log.d("FactRepository", "Marked as favorite: Fact ID $factId")
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e("FactRepository", "Error marking favorite: ${e.message}", e)
             }
         }
     }
+
 
     // Remove a fact from favorites (Delete from favorite_facts table)
     suspend fun unmarkFavorite(factId: Int) {
@@ -98,7 +108,6 @@ class FactRepository(private val factDao: FactDao) {
             println("Removed $rowsDeleted favorite fact(s)")
         }
     }
-
 
     // Check if a fact is marked as favorite
     fun isFavorite(factId: Int): Flow<Boolean> {

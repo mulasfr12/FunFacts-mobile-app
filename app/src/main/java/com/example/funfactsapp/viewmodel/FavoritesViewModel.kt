@@ -1,5 +1,6 @@
 package com.example.funfactsapp.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.*
 import com.example.funfactsapp.data.db.Fact
 import com.example.funfactsapp.data.repository.FactRepository
@@ -17,6 +18,7 @@ class FavoritesViewModel(private val repository: FactRepository) : ViewModel() {
         viewModelScope.launch {
             repository.getFavoriteFacts().collect { favoriteFacts ->
                 _favorites.postValue(favoriteFacts)
+                Log.d("FavoritesViewModel", "Retrieved favorite facts: ${favoriteFacts.map { it.text }}")
             }
         }
     }

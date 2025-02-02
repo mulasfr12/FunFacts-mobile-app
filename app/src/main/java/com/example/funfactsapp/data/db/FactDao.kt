@@ -13,7 +13,7 @@ interface FactDao {
     fun getFavoriteFacts(): Flow<List<Fact>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertFact(fact: Fact)
+    suspend fun insertFact(fact: Fact): Long // ✅ Returns generated ID
 
     // ✅ Ensure deleteFact() correctly returns `Int`
     @Query("DELETE FROM facts WHERE id = :factId")
