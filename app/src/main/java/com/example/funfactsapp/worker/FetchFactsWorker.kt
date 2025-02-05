@@ -3,34 +3,34 @@ package com.example.funfactsapp.worker
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import android.util.Log
+import com.example.funfactsapp.data.db.AppDatabase
 import com.example.funfactsapp.data.repository.FactRepository
-import com.example.funfactsapp.utils.NotificationHelper
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class FactFetchWorker(
-    context: Context,
+    private val context: Context,
     workerParams: WorkerParameters
 ) : CoroutineWorker(context, workerParams) {
 
     override suspend fun doWork(): Result {
-        return try {
-            val repository = FactRepositorySingleton.repository // Get repository instance
-            val randomFact = repository.fetchRandomFact()
+        return withContext(Dispatchers.IO) {
+            try {
+                val factDao = AppDatabase.getDatabase(context).factDao()
+                val repository = FactRepository(factDao)
 
-            randomFact?.let {
-                // Trigger a notification with the random fact
-                NotificationHelper.showFactNotification(
-                    context = applicationContext,
-                    title = "Fun Fact",
-                    message = it.text
-                )
+                // Fetch 1 random fact
+                val fact = repository.fetchRandomFact()
+                fact?.let {
+                    Log.d("FactFetchWorker", "Fetched fact: ${it.text}")
+                } ?: Log.e("FactFetchWorker", "Failed to fetch fact!")
+
+                Result.success() // ✅ Work completed successfully
+            } catch (e: Exception) {
+                Log.e("FactFetchWorker", "Error fetching fact", e)
+                Result.retry() // 🔄 Retry if failed
             }
-
-            Result.success()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Result.failure()
         }
     }
 }

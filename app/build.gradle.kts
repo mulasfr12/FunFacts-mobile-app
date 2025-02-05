@@ -70,6 +70,8 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.navigation.fragment)
     implementation(libs.material) // Add this
+    implementation("androidx.work:work-runtime-ktx:2.8.1")
+    implementation ("com.google.android.material:material:1.11.0") // ✅ Ensure latest Material3 library
 
     // Testing
     testImplementation(libs.junit)
