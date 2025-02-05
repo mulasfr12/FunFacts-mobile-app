@@ -7,5 +7,5 @@
     <item
         android:id="@+id/menu_close_app"
         android:title="Exit App"
-        android:icon="@drawable/ic_exit" /> <!-- ✅ Make sure this icon exists -->
+        android:icon="@drawable/ic_exit" />
 </menu>

@@ -3,4 +3,6 @@
     <string name="favorites">Favorites</string>
     <string name="toggle_dark_mode">Toggle Dark Mode</string>
     <string name="exit_app">Exit App</string>
+    <string name="nav_open">Open Navigation</string>
+    <string name="nav_close">Close Navigation</string>
 </resources>

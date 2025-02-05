@@ -2,15 +2,17 @@ package com.example.funfactsapp
 
 import android.content.SharedPreferences
 import android.os.Bundle
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import com.example.funfactsapp.databinding.ActivityMainBinding
+import com.example.funfactsapp.utils.NotificationHelper
+import com.example.funfactsapp.worker.WorkerScheduler
 import com.google.android.material.navigation.NavigationView
 
 class MainActivity : AppCompatActivity() {
@@ -29,12 +31,16 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        NotificationHelper.createNotificationChannel(this)
         // ✅ Initialize DrawerLayout
         drawerLayout = findViewById(R.id.drawer_layout)
 
         // ✅ Setup Toolbar & Navigation Drawer
         setupToolbar()
         setupNavigationDrawer()
+
+        // ✅ Schedule Background Worker to Fetch Facts
+        WorkerScheduler.scheduleBackgroundFactFetchWorker(this)
 
         // ✅ Safe Navigation Handling
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as? NavHostFragment
@@ -64,12 +70,25 @@ class MainActivity : AppCompatActivity() {
                     return@setNavigationItemSelectedListener true
                 }
                 R.id.menu_close_app -> {
-                    finishAffinity() // ✅ Closes all activities and exits the app
+                    showExitConfirmationDialog() // ✅ Show exit confirmation dialog
                     return@setNavigationItemSelectedListener true
                 }
             }
             false
         }
+    }
+
+    private fun showExitConfirmationDialog() {
+        val dialogBuilder = AlertDialog.Builder(this)
+        dialogBuilder.setTitle("Exit App")
+        dialogBuilder.setMessage("Are you sure you want to exit?")
+        dialogBuilder.setPositiveButton("Yes") { _, _ ->
+            finishAffinity() // ✅ Close the app
+        }
+        dialogBuilder.setNegativeButton("Cancel") { dialog, _ ->
+            dialog.dismiss() // ✅ Dismiss dialog
+        }
+        dialogBuilder.show()
     }
 
     private fun toggleDarkMode() {

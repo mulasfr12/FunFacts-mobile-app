@@ -42,7 +42,7 @@ object NotificationHelper {
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_facts) // ✅ Ensure icon exists
-            .setContentTitle("Daily Fun Fact")
+            .setContentTitle("New Fun Fact!")
             .setContentText(factText)
             .setStyle(NotificationCompat.BigTextStyle().bigText(factText)) // ✅ Handle long text
             .setContentIntent(pendingIntent)
@@ -52,20 +52,20 @@ object NotificationHelper {
 
         val manager = NotificationManagerCompat.from(context)
 
-        // ✅ Check for notification permission before calling manager.notify()
+        // ✅ Check for notification permission before sending
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // Android 13+
             if (ActivityCompat.checkSelfPermission(
                     context,
                     android.Manifest.permission.POST_NOTIFICATIONS
                 ) == android.content.pm.PackageManager.PERMISSION_GRANTED
             ) {
-                manager.notify(1001, notification) // ✅ Send notification only if permission is granted
+                manager.notify(1002, notification) // ✅ Send notification only if permission is granted
                 Log.d("NotificationHelper", "Notification sent: $factText")
             } else {
                 Log.e("NotificationHelper", "Permission denied: Cannot send notification.")
             }
         } else {
-            manager.notify(1001, notification) // ✅ No permission needed below Android 13
+            manager.notify(1002, notification) // ✅ No permission needed below Android 13
             Log.d("NotificationHelper", "Notification sent: $factText")
         }
     }

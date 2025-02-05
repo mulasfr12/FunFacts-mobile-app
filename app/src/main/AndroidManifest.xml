@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- ✅ Required Permissions -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
     <application
         android:allowBackup="true"
         android:usesCleartextTraffic="true"
@@ -16,17 +18,38 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FunFactsApp"
         tools:targetApi="31">
+
+        <!-- ✅ Splash Activity -->
+        <activity
+            android:name=".SplashActivity"
+            android:exported="true"
+            android:theme="@style/Theme.FunFactsApp.Splash"> <!-- ✅ Use splash theme -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+        <!-- ✅ Main Activity -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.FunFactsApp">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <action android:name="com.example.funfactsapp.SEND_NOTIFICATION"/>
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.VIEW"/>  <!-- ✅ Used for deep linking if needed -->
+                <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
-    </application>
 
+        <!-- ✅ Broadcast Receiver for Notifications -->
+        <receiver
+            android:name=".utils.NotificationReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.example.funfactsapp.SEND_NOTIFICATION"/>
+            </intent-filter>
+        </receiver>
+
+    </application>
 </manifest>

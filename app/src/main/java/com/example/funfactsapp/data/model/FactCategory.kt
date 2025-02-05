@@ -14,4 +14,4 @@ enum class FactCategory(val categoryName: String) {
         }
     }
 }
-//This helps in categorizing facts based on API responses.
+//This helps in categorizing facts based on API responses.DELETE
