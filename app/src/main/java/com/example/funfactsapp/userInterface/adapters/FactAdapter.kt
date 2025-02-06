@@ -1,9 +1,8 @@
 package com.example.funfactsapp.userInterface.adapters
 
+
 import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder
-import android.animation.ValueAnimator
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,6 +11,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.funfactsapp.data.db.Fact
 import com.example.funfactsapp.databinding.ItemFactBinding
+import com.google.android.material.snackbar.Snackbar
 
 class FactAdapter(
     private var favoriteFactIds: Set<Int>,
@@ -28,6 +28,16 @@ class FactAdapter(
             binding.btnFavorite.setOnClickListener {
                 onFavoriteClick(fact)
                 animateFavoriteButton(binding.btnFavorite)
+
+                // ✅ Show Snackbar Notification
+                Snackbar.make(
+                    binding.root,
+                    "Added to favorites!",
+                    Snackbar.LENGTH_SHORT
+                ).setAction("UNDO") {
+                    onFavoriteClick(fact) // Removes from favorites if tapped
+                }.show()
+
             }
         }
 
@@ -38,7 +48,6 @@ class FactAdapter(
 
             val animator = ObjectAnimator.ofPropertyValuesHolder(view, scaleX, scaleY)
             animator.duration = 300
-            animator.repeatCount = 0
             animator.start()
         }
     }
@@ -57,7 +66,6 @@ class FactAdapter(
 
     fun updateFavorites(favorites: List<Fact>) {
         favoriteFactIds = favorites.map { it.id }.toSet()
-        //notifyDataSetChanged()
     }
 }
 
