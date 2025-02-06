@@ -69,6 +69,10 @@ class MainActivity : AppCompatActivity() {
                     drawerLayout.closeDrawer(GravityCompat.START) // ✅ Close drawer after selection
                     return@setNavigationItemSelectedListener true
                 }
+                R.id.menu_toggle_notifications -> {
+                    toggleNotifications() // ✅ Handle notification toggle
+                    return@setNavigationItemSelectedListener true
+                }
                 R.id.menu_close_app -> {
                     showExitConfirmationDialog() // ✅ Show exit confirmation dialog
                     return@setNavigationItemSelectedListener true
@@ -77,6 +81,29 @@ class MainActivity : AppCompatActivity() {
             false
         }
     }
+
+    private fun toggleNotifications() {
+        val isEnabled = sharedPreferences.getBoolean("notifications_enabled", true)
+        val newStatus = !isEnabled
+
+        val dialogBuilder = AlertDialog.Builder(this)
+        dialogBuilder.setTitle(if (newStatus) "Enable Notifications" else "Disable Notifications")
+        dialogBuilder.setMessage(if (newStatus) "Do you want to enable notifications?" else "Do you want to disable notifications?")
+        dialogBuilder.setPositiveButton("Yes") { _, _ ->
+            sharedPreferences.edit().putBoolean("notifications_enabled", newStatus).apply()
+
+            if (newStatus) {
+                WorkerScheduler.scheduleBackgroundFactFetchWorker(this)
+                WorkerScheduler.scheduleFactNotificationWorker(this)
+            } else {
+                WorkerScheduler.cancelAllWorkers(this) // ✅ This now correctly cancels all workers
+            }
+        }
+        dialogBuilder.setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
+        dialogBuilder.show()
+    }
+
+
 
     private fun showExitConfirmationDialog() {
         val dialog = AlertDialog.Builder(this)

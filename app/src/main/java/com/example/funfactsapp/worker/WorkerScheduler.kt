@@ -8,18 +8,40 @@ object WorkerScheduler {
 
     fun scheduleBackgroundFactFetchWorker(context: Context) {
         val workRequest = PeriodicWorkRequestBuilder<BackgroundFactFetchWorker>(
-            1, TimeUnit.MINUTES // ✅ Runs every 1 minute for testing (change to 12 hours for production)
+            12, TimeUnit.HOURS // ✅ Runs every 12 hours
         ).setConstraints(
             Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED) // ✅ Only fetch if online
-                .setRequiresBatteryNotLow(true) // ✅ Runs only when battery is not low
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .setRequiresBatteryNotLow(true)
                 .build()
         ).build()
 
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             "BackgroundFactFetchWorker",
-            ExistingPeriodicWorkPolicy.KEEP, // ✅ Avoids duplicate workers
+            ExistingPeriodicWorkPolicy.KEEP,
             workRequest
         )
+    }
+
+    fun scheduleFactNotificationWorker(context: Context) {
+        val notificationWorkRequest = PeriodicWorkRequestBuilder<FactNotificationWorker>(
+            12, TimeUnit.HOURS // ✅ Runs every 12 hours
+        ).setConstraints(
+            Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .setRequiresBatteryNotLow(true)
+                .build()
+        ).build()
+
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+            "FactNotificationWorker",
+            ExistingPeriodicWorkPolicy.KEEP,
+            notificationWorkRequest
+        )
+    }
+
+    fun cancelAllWorkers(context: Context) {
+        WorkManager.getInstance(context).cancelUniqueWork("BackgroundFactFetchWorker")
+        WorkManager.getInstance(context).cancelUniqueWork("FactNotificationWorker")
     }
 }

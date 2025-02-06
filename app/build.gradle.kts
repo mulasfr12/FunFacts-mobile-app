@@ -75,7 +75,9 @@ dependencies {
 
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation ("com.airbnb.android:lottie:6.0.0")
-    implementation("androidx.core:core-splashscreen:1.0.1") // ✅ Add this
+    implementation("androidx.core:core-splashscreen:1.0.1")
+    implementation ("androidx.cardview:cardview:1.0.0")
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

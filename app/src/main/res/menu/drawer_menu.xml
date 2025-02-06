@@ -5,7 +5,13 @@
         android:icon="@drawable/ic_dark_mode" />
 
     <item
+        android:id="@+id/menu_toggle_notifications"
+        android:title="@string/toggle_notifications"
+        android:icon="@drawable/ic_notification" />
+
+    <item
         android:id="@+id/menu_close_app"
-        android:title="Exit App"
+        android:title="@string/exit_app"
         android:icon="@drawable/ic_exit" />
+
 </menu>

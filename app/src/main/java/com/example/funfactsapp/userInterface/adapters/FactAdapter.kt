@@ -1,6 +1,5 @@
 package com.example.funfactsapp.userInterface.adapters
 
-
 import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder
 import android.view.LayoutInflater
@@ -32,16 +31,13 @@ class FactAdapter(
                 // ✅ Show Snackbar Notification
                 Snackbar.make(
                     binding.root,
-                    "Added to favorites!",
+                    if (binding.btnFavorite.isSelected) "Removed" else "Added to favorites!",
                     Snackbar.LENGTH_SHORT
-                ).setAction("UNDO") {
-                    onFavoriteClick(fact) // Removes from favorites if tapped
-                }.show()
-
+                ).show()
             }
         }
 
-        // ✅ Favorite button scale & bounce animation
+        // ✅ Favorite button bounce animation
         private fun animateFavoriteButton(view: View) {
             val scaleX = PropertyValuesHolder.ofFloat(View.SCALE_X, 1f, 1.3f, 1f)
             val scaleY = PropertyValuesHolder.ofFloat(View.SCALE_Y, 1f, 1.3f, 1f)
@@ -66,6 +62,7 @@ class FactAdapter(
 
     fun updateFavorites(favorites: List<Fact>) {
         favoriteFactIds = favorites.map { it.id }.toSet()
+        //notifyDataSetChanged()
     }
 }
 

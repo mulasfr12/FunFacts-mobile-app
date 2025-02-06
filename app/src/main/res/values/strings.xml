@@ -6,4 +6,5 @@
     <string name="nav_open">Open Navigation</string>
     <string name="nav_close">Close Navigation</string>
     <string name="facts">Facts</string>
+    <string name="toggle_notifications">Toggle Notifications</string>
 </resources>
