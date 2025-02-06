@@ -73,6 +73,7 @@ dependencies {
     implementation("androidx.work:work-runtime-ktx:2.8.1")
     implementation ("com.google.android.material:material:1.11.0") // ✅ Ensure latest Material3 library
 
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation ("com.airbnb.android:lottie:6.0.0")
     implementation("androidx.core:core-splashscreen:1.0.1") // ✅ Add this
     // Testing

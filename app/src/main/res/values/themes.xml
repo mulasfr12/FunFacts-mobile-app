@@ -24,4 +24,10 @@
     <style name="Theme.FunFactsApp.Splash" parent="Theme.Material3.Light.NoActionBar">
         <item name="android:windowBackground">@drawable/splash_background</item> <!-- ✅ Use custom drawable -->
     </style>
+
+    <!-- ✅ Exit Confirmation Dialog Slide-Up Animation -->
+    <style name="DialogSlideUpAnimation">
+        <item name="android:windowEnterAnimation">@anim/slide_up</item>
+        <item name="android:windowExitAnimation">@anim/slide_down</item>
+    </style>
 </resources>

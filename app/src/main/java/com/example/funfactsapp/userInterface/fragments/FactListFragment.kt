@@ -5,15 +5,18 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.funfactsapp.R
 import com.example.funfactsapp.databinding.FragmentFactListBinding
 import com.example.funfactsapp.userInterface.adapters.FactAdapter
 import com.example.funfactsapp.viewmodel.FactViewModel
 import com.example.funfactsapp.viewmodel.FactViewModelFactory
 import com.example.funfactsapp.data.db.AppDatabase
 import com.example.funfactsapp.data.repository.FactRepository
+import com.google.android.material.transition.MaterialSharedAxis
 
 class FactListFragment : Fragment() {
 
@@ -27,6 +30,14 @@ class FactListFragment : Fragment() {
 
     private lateinit var factAdapter: FactAdapter
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // ✅ Apply shared axis transition for smooth fragment transitions
+        enterTransition = MaterialSharedAxis(MaterialSharedAxis.X, true)
+        returnTransition = MaterialSharedAxis(MaterialSharedAxis.X, false)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -38,10 +49,14 @@ class FactListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // ✅ Initialize adapter with an empty favorite list initially
+        // ✅ Initialize MotionLayout (if applicable)
+        val motionLayout = view.findViewById<MotionLayout>(R.id.motionLayout)
+        motionLayout.transitionToStart()
+
+        // ✅ Initialize adapter
         factAdapter = FactAdapter(
             onFavoriteClick = { fact -> factViewModel.saveToFavorites(fact) },
-            favoriteFactIds = emptySet() // ✅ Initialize with an empty set
+            favoriteFactIds = emptySet()
         )
 
         binding.recyclerView.apply {
@@ -55,10 +70,9 @@ class FactListFragment : Fragment() {
             factAdapter.submitList(facts)
         }
 
-
         // ✅ Observe favorite facts and update adapter dynamically
         factViewModel.favoriteFacts.observe(viewLifecycleOwner) { favorites ->
-            factAdapter.updateFavorites(favorites) // ✅ Ensure favorites update dynamically
+            factAdapter.updateFavorites(favorites)
         }
 
         // Fetch facts and favorite facts

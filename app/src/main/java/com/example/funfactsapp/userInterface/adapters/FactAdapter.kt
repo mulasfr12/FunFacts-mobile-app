@@ -1,7 +1,11 @@
 package com.example.funfactsapp.userInterface.adapters
 
+import android.animation.ObjectAnimator
+import android.animation.PropertyValuesHolder
+import android.animation.ValueAnimator
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -10,7 +14,7 @@ import com.example.funfactsapp.data.db.Fact
 import com.example.funfactsapp.databinding.ItemFactBinding
 
 class FactAdapter(
-    private var favoriteFactIds: Set<Int>, // ✅ Now accepts favorite IDs
+    private var favoriteFactIds: Set<Int>,
     private val onFavoriteClick: (Fact) -> Unit
 ) : ListAdapter<Fact, FactAdapter.FactViewHolder>(FactDiffCallback()) {
 
@@ -19,11 +23,23 @@ class FactAdapter(
 
         fun bind(fact: Fact) {
             binding.tvFact.text = fact.text
-            binding.btnFavorite.isSelected = favoriteFactIds.contains(fact.id) // ✅ Correctly marks favorites
+            binding.btnFavorite.isSelected = favoriteFactIds.contains(fact.id)
 
             binding.btnFavorite.setOnClickListener {
                 onFavoriteClick(fact)
+                animateFavoriteButton(binding.btnFavorite)
             }
+        }
+
+        // ✅ Favorite button scale & bounce animation
+        private fun animateFavoriteButton(view: View) {
+            val scaleX = PropertyValuesHolder.ofFloat(View.SCALE_X, 1f, 1.3f, 1f)
+            val scaleY = PropertyValuesHolder.ofFloat(View.SCALE_Y, 1f, 1.3f, 1f)
+
+            val animator = ObjectAnimator.ofPropertyValuesHolder(view, scaleX, scaleY)
+            animator.duration = 300
+            animator.repeatCount = 0
+            animator.start()
         }
     }
 
@@ -33,16 +49,17 @@ class FactAdapter(
     }
 
     override fun onBindViewHolder(holder: FactViewHolder, position: Int) {
+        val fadeIn = ObjectAnimator.ofFloat(holder.itemView, "alpha", 0f, 1f)
+        fadeIn.duration = 500
+        fadeIn.start()
         holder.bind(getItem(position))
     }
 
-    // ✅ Update favorite fact IDs dynamically
     fun updateFavorites(favorites: List<Fact>) {
         favoriteFactIds = favorites.map { it.id }.toSet()
-        notifyDataSetChanged()
+        //notifyDataSetChanged()
     }
 }
-
 
 // ✅ DiffUtil for efficient RecyclerView updates
 class FactDiffCallback : DiffUtil.ItemCallback<Fact>() {

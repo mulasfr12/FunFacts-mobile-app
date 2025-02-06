@@ -5,4 +5,5 @@
     <string name="exit_app">Exit App</string>
     <string name="nav_open">Open Navigation</string>
     <string name="nav_close">Close Navigation</string>
+    <string name="facts">Facts</string>
 </resources>

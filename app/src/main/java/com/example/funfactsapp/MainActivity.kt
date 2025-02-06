@@ -79,16 +79,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showExitConfirmationDialog() {
-        val dialogBuilder = AlertDialog.Builder(this)
-        dialogBuilder.setTitle("Exit App")
-        dialogBuilder.setMessage("Are you sure you want to exit?")
-        dialogBuilder.setPositiveButton("Yes") { _, _ ->
-            finishAffinity() // ✅ Close the app
-        }
-        dialogBuilder.setNegativeButton("Cancel") { dialog, _ ->
-            dialog.dismiss() // ✅ Dismiss dialog
-        }
-        dialogBuilder.show()
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Exit App")
+            .setMessage("Are you sure you want to exit?")
+            .setPositiveButton("Yes") { _, _ -> finishAffinity() }
+            .setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
+            .create()
+
+        dialog.window?.attributes?.windowAnimations = R.style.DialogSlideUpAnimation
+        dialog.show()
     }
 
     private fun toggleDarkMode() {
